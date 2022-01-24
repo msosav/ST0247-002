@@ -19,11 +19,3 @@ class GraphAM:
             if self.matriz[vertex][i] != 0:
                 lista.append(i)
         return lista
-
-class Lol:
-    g = GraphAM(4)
-    g.addArc(1,2,4)
-    g.addArc(1,3,10)
-    print(g.getWeight(1,2))
-    print(g.getWeight(1,3))
-    print(g.getSuccessors(1))

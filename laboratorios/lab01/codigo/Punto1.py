@@ -1,6 +1,6 @@
 from collections import deque
 
-class GraphAL:
+class Ciudad:
     def __init__(self, size):
         self.nombreVertice = [""]*size
         self.mapaCiudad = [0]*size
@@ -23,7 +23,7 @@ class GraphAL:
         self.nombreVertice[id] = name
 
 def main():
-    g = GraphAL(5)
+    g = Ciudad(5)
     g.addVertex(1, "Movies")
     g.addVertex(2, "Snell")
     g.addArc(1, 2, 10)

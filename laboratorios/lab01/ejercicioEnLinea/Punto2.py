@@ -24,11 +24,11 @@ class Bipartite_Graph:
         while True:
             g = Bipartite_Graph
             list = []
-            print("Digite el numero de nodos")
+            print("Type the number of nodes")
             numNodos = int(input())
             if numNodos == 0:
                 return
-            print("Digite el numero de arcos")
+            print("Type the number of edges")
             numArcos = int(input())
             for j in range(numArcos):
                 print("Digite arco")

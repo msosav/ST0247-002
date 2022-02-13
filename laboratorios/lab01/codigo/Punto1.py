@@ -32,3 +32,18 @@ class Ciudad:
 
     def addVertex(self, id, name):
         self.nombreVertice[id] = name
+
+def main():
+    g = Ciudad(5)
+    g.addVertex(1, "Movies")
+    g.addVertex(2, "Snell")
+    g.addVertex(3, "Hospital")
+    g.addVertex(4, "School")
+    g.addArc("Movies", "Snell", 10)
+    g.addArc("Movies", "School", 30)
+    g.addArc("Movies", "Hospital", 40)
+    print(g.getWeight("Movies","Snell"))
+    print(g.getWeight("Movies","School"))
+    print(g.getWeight("Movies","Hospital"))
+
+main()

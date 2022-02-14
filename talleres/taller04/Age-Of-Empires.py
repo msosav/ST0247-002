@@ -1,6 +1,5 @@
-import math
 from collections import deque
-
+## Algortimo para verificar si hay camino
 class GraphAL:
     def __init__(self, size):
         self.size = size
@@ -43,23 +42,6 @@ def hayCaminoAux(g, inicio:int, final:int, tablaHashDeVisitados) -> bool:
                 if hayCaminoDelVecinoAd:
                     return True
         return False #Si nunca dio verdadero es falso
-def costoDelMasCorto(g, inicio:int, final:int):
-    arregloDeVisitados = [False]*g.size
-    return costoDelMasCortoAux(g, inicio, final, arregloDeVisitados)
-
-def costoDelMasCortoAux(g, inicio:int, final:int, arregloDeVisitados):
-    arregloDeVisitados[inicio] = True
-    if inicio == final:
-        return 0
-    else:
-        elCostoDelMasCorto = math.inf
-        for vecino in g.getSuccessors(inicio):
-            if not arregloDeVisitados[vecino]:
-                elCostoDelMasCortoDesdeElVecinoHastaD:int = costoDelMasCortoAux(g, vecino, final, arregloDeVisitados)
-                elCostoDelMasCortoDesdeOHastaDPasandoPorElVecino = g.getWeight(inicio,vecino) + elCostoDelMasCortoDesdeElVecinoHastaD
-                if elCostoDelMasCortoDesdeOHastaDPasandoPorElVecino < elCostoDelMasCorto:
-                    elCostoDelMasCorto = elCostoDelMasCortoDesdeOHastaDPasandoPorElVecino
-        return elCostoDelMasCorto
 
 def main():
     grafo = GraphAL(5)
@@ -70,5 +52,4 @@ def main():
     grafo.addArc(3,4,3)
     print(hayCamino(grafo, 0, 4))
     print(hayCamino(grafo, 1,4))
-    print(costoDelMasCorto(grafo, 0, 4))
 main()

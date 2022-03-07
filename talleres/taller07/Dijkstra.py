@@ -1,25 +1,17 @@
 from collections import deque
 from cmath import inf
-class GraphAL:
 
-    def __init__(self,size):
+class GraphAL:
+    def __init__(self, size):
         self.size = size
-        self.arregloDeListas =[0]*size
+        self.arregloDeListas = [0]*size
         for i in range(0,size):
             self.arregloDeListas[i] = deque()
 
-    def addArc(self,vertex,edges, weigth): ## Añadir el peso
+    def addArc(self, vertex, edge, weight):
         fila = self.arregloDeListas[vertex]
-        parejaDestinoPeso = (edges, weigth)
+        parejaDestinoPeso = (edge, weight)
         fila.append(parejaDestinoPeso)
-    
-    def getWeight(self, source, destination):
-        arreglo = self.arregloDeListas[source]
-        for i in arreglo:
-            if i[0] == destination:
-                peso = i[1]
-        return peso
-
     def getSuccessors(self, vertice):
         lista = []
         arreglo = self.arregloDeListas[vertice]
@@ -28,45 +20,58 @@ class GraphAL:
                 lista.append(i[0])
         return lista
 
-def actualizarLaTabla(g,v,distancias,predecesores) -> None:
-    losVecinosDeV = g.getSuccessors(v)
-    for vecino in losVecinosDeV:
-        elPesoDeVAlVecino = g.getWeight(v,vecino)
-        if distancias[v] + elPesoDeVAlVecino < distancias[vecino]: 
-            distancias[vecino] = distancias[v] + elPesoDeVAlVecino
-            predecesores[vecino] = v
+    def getWeight(self, source, destination):
+        arreglo = self.arregloDeListas[source]
+        for i in arreglo:
+            if i[0] == destination:
+                peso = i[1]
+        return peso
 
-def elMasCercaQueNoEsteVisitado(g,v,visitados) -> int:
-    losVecinosDeV = g.getSuccessors(v)
-    elPesoDelMasCerca, elMasCerca = inf, 0
+
+
+def elMasCercaQueNoEsteVisitado(grafo, vertice, visitados, distancias, predecesores):
+    losVecinosDeV = grafo.getSuccessors(vertice)
+    elPesoDelMasCerca = inf
+    elMasCerca = 0
     for vecino in losVecinosDeV:
-        peso = g.getWeight(v,vecino)
+        peso = grafo.getWeight(vertice, vecino)
         if peso <= elPesoDelMasCerca and not visitados[vecino]:
-            elPesoDelMasCerca, elMasCerca = peso, vecino
+            elPesoDelMasCerca = peso
+            elMasCerca = vecino
+    actualizarLaTabla(grafo, vertice, distancias, predecesores)
     return elMasCerca
 
-def dijkstra(g,s : int) -> list:
-    distancias =  [inf]*g.size
-    predecesores = [-1]*g.size
-    visitados = [False]*g.size
-    distancias[s], visitados[s] = 0, True
-    v = s
-    for _ in range(1,g.size+1):
-        v = elMasCercaQueNoEsteVisitado(g,v,visitados)
-        visitados[v] = True
-        actualizarLaTabla(g,v,distancias,predecesores)
-    return (distancias, predecesores)
+def actualizarLaTabla(grafo, vertice,distancias, predecesores):
+    losVecinosDeV = grafo.getSuccessors(vertice)
+    for vecino in losVecinosDeV:
+        elpesoDeVAlVecino = grafo.getWeight(vertice, vecino)
+        if distancias[vertice] + elpesoDeVAlVecino < distancias[vecino]:
+            distancias[vecino] = distancias[vertice] + elpesoDeVAlVecino
+            predecesores[vecino] = vertice
+    
+    
+def dijkstra(grafo,origen : int) -> list:
+    distancias =  [inf]*grafo.size
+    distancias[origen] = 0
+    predecesores = [-1]*grafo.size
+    visitados = [False]*grafo.size
+    visitados[origen] = True
+    vertice = origen
+    for _ in range(grafo.size):
+        vertice = elMasCercaQueNoEsteVisitado(grafo, vertice, visitados, distancias, predecesores)
+        visitados[vertice] = True
+        #actualizarLaTabla(grafo, vertice, distancias, predecesores)
+    return distancias, predecesores
 
 def main():
-    g = GraphAL(6)
-    g.addArc(0,1,2)
-    g.addArc(0,2,4)
-    g.addArc(1,2,1)
-    g.addArc(1,3,7)
-    g.addArc(2,4,3)
-    g.addArc(4,3,2)
-    g.addArc(4,5,5)
-    g.addArc(3,5,1)
-    print(dijkstra(g,0))
+    grafo = GraphAL(6)
+    grafo.addArc(0,1,2)
+    grafo.addArc(0,2,4)
+    grafo.addArc(1,2,1)
+    grafo.addArc(1,3,7)
+    grafo.addArc(2,4,3)
+    grafo.addArc(4,3,2)
+    grafo.addArc(4,5,5)
+    grafo.addArc(3,5,1)
+    print(dijkstra(grafo,0))
 main()
-

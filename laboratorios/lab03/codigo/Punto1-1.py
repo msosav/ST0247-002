@@ -1,4 +1,3 @@
-from cmath import inf
 from collections import deque
 
 class Ciudad:
@@ -55,16 +54,13 @@ class Ciudad:
 
     def backtracking(self, inicio1, fin1):
         inicio = self.getId(inicio1)
+        inicioAux = self.getId(inicio1)
         fin = self.getId(fin1)
         visitado = [False]*self.size
-        lista = self.backtrackingAux(inicio, fin, visitado, [], 0)
-        return self.menor(lista)
+        lista = self.backtrackingAux(inicio, inicioAux, fin, visitado, [], 0)
+        return min(lista)
 
-    def menor(self, lista):
-        print(max(lista))
-
-
-    def backtrackingAux(self, inicio, fin, visitado, lista, peso):
+    def backtrackingAux(self, inicio, inicioAux, fin, visitado, lista, peso):
         visitado[inicio] = True
         if inicio == fin:
             lista.append(peso)
@@ -72,7 +68,11 @@ class Ciudad:
         for vecino in self.getSuccessors(inicio):
             if not visitado[vecino]:
                 pesoAux = self.getWeightConId(inicio, vecino)
-                self.backtrackingAux(vecino, fin, visitado, lista, peso = peso + pesoAux)
+                self.backtrackingAux(vecino, inicioAux, fin, visitado, lista, peso = peso + pesoAux)
+            else:
+                pass
+            visitado = [False]*self.size
+            visitado[inicioAux] = True
         return lista
 
 def main():
@@ -82,9 +82,9 @@ def main():
     g.addVertex(3, "Hospital")
     g.addArc("Movies", "Snell", 10)
     g.addArc("Movies", "Hospital", 40)
-    g.addArc("Snell", "Hospital", 10)
+    g.addArc("Snell", "Hospital", 50)
     g.addArc("Hospital", "Snell", 20)
     g.addArc("Hospital", "Movies", 20)
-    print(g.backtracking("Movies", "Hospital"))
+    print(g.backtracking("Movies", "Snell"))
 
 main()

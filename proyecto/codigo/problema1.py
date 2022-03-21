@@ -1,21 +1,40 @@
 from cmath import inf
 import pandas as pd
 import numpy as np
-
 from collections import deque
 
 class GraphAL:
-    def __init__(self, size, df):
-        self.df = df
-        self.size = size
-        self.arregloDeListas = [0]*size
-        for i in range(0,size):
+    def __init__(self, lista, riesgoAcoso):
+        self.riesgoAcoso = riesgoAcoso
+        self.listaRecorrido = []
+        self.listaRecorrido1 = []
+        listaNodos = []
+        for i in lista:
+            if i[0] not in listaNodos:
+                listaNodos.append(i[0])
+        self.matrizUnaVia = np.zeros((len(listaNodos), len(listaNodos)))
+        self.matrizAcoso = np.zeros((len(listaNodos), len(listaNodos)))
+        self.distanciaMasCorta = inf
+        self.distancia=0
+        self.hasPath =False
+        self.visited = [[0 for x in range(len(self.matrizUnaVia[0]))] for y in range(len(self.matrizUnaVia))]
+        self.size = len(listaNodos)
+        self.arregloDeListas = [0]*len(listaNodos)
+        for i in range(0,len(listaNodos)):
             self.arregloDeListas[i] = deque()
 
-    def addArc(self, vertex, edge, weight):
+    def addArc(self, vertex, edge, weight, oneWay, acoso):
         fila = self.arregloDeListas[vertex]
         parejaDestinoPeso = (edge, weight)
         fila.append(parejaDestinoPeso)
+        if oneWay == False:
+            self.matrizUnaVia[vertex][edge] = weight
+            self.matrizUnaVia[edge][vertex] = weight
+            self.matrizAcoso[vertex][edge] = acoso
+            self.matrizAcoso[edge][vertex] = acoso
+        else:
+            self.matrizUnaVia[vertex][edge] = weight
+            self.matrizAcoso[vertex][edge] = acoso
 
     def getSuccessors(self, vertice):
         lista = []
@@ -27,65 +46,72 @@ class GraphAL:
 
     def getWeight(self, source, destination):
         arreglo = self.arregloDeListas[source]
-        peso = 0
         for i in arreglo:
             if i[0] == destination:
                 peso = i[1]
         return peso
+    
+    def encontrarCamino(self, start, end):
+        self.visita(start[0], start[1], end)
+        if self.hasPath:
+            print("Distancia camino más corto:", self.distanciaMasCorta)
+            print("Los puntos que se recorrieron:", self.listaRecorrido)
+            print("Promedio ponderado acoso:", self.promedioPonderado())
+        else:
+            print("No hay un camino")
 
-    def djikstra(self, inicio:int, final) -> list:
-        inicio = self.df.index[self.df["origin"] == inicio].tolist()
-        inicio = inicio[0]
-        final = self.df.index[self.df["destination"] == final].tolist()
-        final = final[0]
-        distancias = [inf]*self.size
-        distancias[inicio] = 0
-        predecesores = [-1]*self.size
-        visitados = [False]*self.size
-        visitados[inicio] = True
-        vertice = inicio
-        for _ in range(self.size):
-            vertice = self.elMasCercaNoVisitado(vertice, distancias, predecesores, visitados)
-            visitados[vertice] = True
-            self.actualizarLaTabla(vertice, distancias, predecesores)
-            if vertice == final:
-                return (distancias, predecesores)
-        return (distancias, predecesores)
+    def visita(self, x, y, end):
+        if x==end[0]and y==end[1]:
+            if self.distanciaMasCorta > min(self.distancia, self.distanciaMasCorta):
+                self.listaRecorrido = self.listaRecorrido1.copy()
+                if self.promedioPonderado() < self.riesgoAcoso:
+                    self.distanciaMasCorta = min(self.distancia, self.distanciaMasCorta)
+                    self.hasPath = True
+                else:
+                    self.hasPath = False
+            return
+        self.visited[x][y] = 1
+        self.distancia += self.matrizUnaVia[x][y]
+        self.listaRecorrido1.append((x,y))
+        if self.sePuedeVisitar(x+1, y):
+            self.visita(x+1, y, end)
+        if self.sePuedeVisitar(x, y+1):
+            self.visita(x, y+1, end)
+        if self.sePuedeVisitar(x-1, y):
+            self.visita(x-1, y, end)
+        if self.sePuedeVisitar(x, y-1):
+            self.visita(x, y-1, end)
+        self.visited[x][y] = 0
+        self.distancia -= self.matrizUnaVia[x][y]
+        self.listaRecorrido1.remove((x,y))
 
-    def elMasCercaNoVisitado(self, vertice, distancia, predecesor, visitados):
-        print(vertice)
-        losVecinosDeV = self.getSuccessors(vertice)
-        elMasCerca = 0
-        pesoElMasCerca = inf
-        peso = 0
-        for vecino in losVecinosDeV:
-            print(vecino)
-            peso = self.getWeight(vertice, vecino)
-            vecino = self.df.index[self.df["origin"] == vecino].tolist()
-            vecino = vecino[0]
-            if peso <= pesoElMasCerca and not visitados[vecino]:
-                elMasCerca = vecino
-                pesoElMasCerca = peso
-                predecesor[elMasCerca] = vertice
-                distancia[elMasCerca] = peso + distancia[vertice]
-        return elMasCerca
+    def sePuedeVisitar(self, x, y):
+        if x<0 or y<0 or x>=len(self.matrizUnaVia[0]) or y>=len(self.matrizUnaVia):
+            return False
+        if self.matrizUnaVia[x][y]==0 or self.visited[x][y]==1:
+            return False
+        return True
 
-    def actualizarLaTabla(self, vertice, distancia, predecesor) -> None:
-        losVecinosDeV = self.getSuccessors(vertice)
-        for vecino in losVecinosDeV:
-            elPesoDeVAlVecino = self.getWeight(vertice, vecino)
-            vecino = self.df.index[self.df["origin"] == vecino].tolist()
-            vecino = vecino[0]
-            if (distancia[vertice] + elPesoDeVAlVecino) < distancia[vecino]:
-                distancia[vecino] = distancia[vertice] + elPesoDeVAlVecino
-                predecesor[vecino] = vertice
+    def imprimirMatriz(self):
+        print(self.matrizUnaVia)
+
+    def promedioPonderado(self):
+        numerador = 0
+        denominador = 0
+        for pareja in self.listaRecorrido:
+            numerador = numerador + self.matrizAcoso[pareja[0]][pareja[1]]*self.matrizUnaVia[pareja[0]][pareja[1]]
+            denominador = denominador + self.matrizAcoso[pareja[0]][pareja[1]]
+        return numerador/denominador
 
 def main():
-    df = pd.read_csv("lol.csv", sep=";")
-    lista = df.to_numpy()
-    g = GraphAL(len(df), df)
-    for id in range(len(df)):
-        g.addArc(id, lista[id][1], lista[id][2])
-    print(g.djikstra("a", "d"))
-    
+    df = pd.read_csv("prueba.csv", delimiter=";")
+    lista = df.to_numpy().tolist()
+    riesgoAcoso = float(input("Promedio ponderado acoso: "))
+    g = GraphAL(lista, riesgoAcoso)
+    for i in lista:
+        g.addArc(i[0], i[1], i[2], i[3], i[4])
+    inicio = (2,3)
+    fin = (3,4)
+    g.encontrarCamino(inicio,fin)
+
 main()

@@ -92,9 +92,6 @@ class GraphAL:
             return False
         return True
 
-    def imprimirMatriz(self):
-        print(self.matrizUnaVia)
-
     def promedioPonderado(self):
         numerador = 0
         denominador = 0

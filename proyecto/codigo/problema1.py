@@ -1,5 +1,5 @@
 from cmath import inf
-from numpy import append
+from collections import deque
 import pandas as pd
 
 class GraphAL:
@@ -9,43 +9,46 @@ class GraphAL:
         self.distancias = {}
         self.predecesores = {}
         self.visitados = {}
+        self.contador = 0
+        self.listaInfo = []
+        self.listaRecorridos = []
 
-    def addArc(self, vertex, edge, weight, oneWay, acoso):
-        if vertex in self.ArregloDeListas:
-            self.ArregloDeListas[vertex] = (edge, weight, oneWay, acoso), (self.ArregloDeListas[vertex])
-        else:
-            self.ArregloDeListas[vertex] = (edge, weight, oneWay, acoso)
-            self.distancias[(vertex)] = inf
-            self.predecesores[(vertex)] = -1
-            self.visitados[(vertex)] = False
-            self.listaRecorridos = []
+    def addArc(self, vertex):
+        if vertex not in self.ArregloDeListas:
+            self.ArregloDeListas[vertex] = self.contador
+            self.visitados[vertex] = False
+            self.distancias[vertex] = 0
+            self.predecesores[vertex] = ""
+            self.contador += 1
+
+    def crearDeque(self):
+        self.listaInfo = [0]*self.contador
+        for i in range(0, self.contador):
+            self.listaInfo[i] = deque()
+
+    def addLista(self, vertex, edge, weight, oneWay, acoso):
+        vertice = self.ArregloDeListas[vertex]
+        fila = self.listaInfo[vertice]
+        parejaDestinoPeso = (vertex, edge, weight, oneWay, acoso)
+        fila.append(parejaDestinoPeso)
 
     def getSuccessors(self, vertice):
-        contador = 0
         arregloAux = []
-        if self.ArregloDeListas[vertice][0][0]=="(":
-            arregloAux.append(self.ArregloDeListas[vertice][0])
-        else:
-            try:
-                for destino, peso, oneWay, acoso in self.ArregloDeListas[vertice]:
-                    arregloAux.append(destino)
-                    contador += 1
-            except ValueError:
-                print("xd")
-                for destino, peso, oneWay, acoso in self.ArregloDeListas[vertice][contador:]:
-                    arregloAux.append(destino)
+        vertex = self.ArregloDeListas[vertice]
+        arreglo = self.listaInfo[vertex]
+        for i in arreglo:
+            if i[1] != 0:
+                arregloAux.append(i[1])
         return arregloAux
 
     def getWeight(self, source, destination):
-        if self.ArregloDeListas[source][0]==destination:
-            return self.ArregloDeListas[source][1]
-        else:
-            for destino, peso, oneWay, acoso in self.ArregloDeListas[source]:
-                if destino==destination:
-                    return peso
-
-    def imprimirDiccionario(self):
-        print(self.ArregloDeListas)
+        vertice = self.ArregloDeListas[source]
+        arreglo = self.listaInfo[vertice]
+        peso = 0
+        for i in arreglo:
+            if i[1] == destination:
+                peso = i[2]
+        return peso
 
     def djikstra(self, inicio, fin) -> list:
         distanciasAux = self.distancias.copy()
@@ -55,8 +58,10 @@ class GraphAL:
         visitadosAux[inicio] = True
         vertice = inicio
         for _ in range(len(self.ArregloDeListas)):
-            vertice = self.elMasCercaNoVisitado(vertice, distanciasAux, predecesoresAux, visitadosAux)
+            vertice = self.elMasCercaNoVisitado(vertice, distanciasAux, predecesoresAux, visitadosAux, fin)
             visitadosAux[vertice] = True
+            
+            self.listaRecorridos.append[vertice]
             self.actualizarLaTabla(vertice, distanciasAux, predecesoresAux)
             if fin == vertice:
                 """if self.promedio <= self.promedioPonderado():
@@ -69,14 +74,20 @@ class GraphAL:
                 return (max(lista))
         return (max(list(distanciasAux)))
 
-    def elMasCercaNoVisitado(self, vertice, distancia, predecesor, visitados):
+    def elMasCercaNoVisitado(self, vertice, distancia, predecesor, visitados, fin):
         losVecinosDeV = self.getSuccessors(vertice)
         elMasCerca = 0
         pesoElMasCerca = inf
         peso = 0
         for vecino in losVecinosDeV:
             peso = self.getWeight(vertice, vecino)
-            if peso <= pesoElMasCerca and visitados[vecino]!=True:
+            if vecino == fin:
+                elMasCerca = vecino
+                pesoElMasCerca = peso
+                predecesor[elMasCerca] = vertice
+                distancia[elMasCerca] = peso + distancia[vertice]
+                break
+            elif peso <= pesoElMasCerca and visitados[vecino] == False:
                 elMasCerca = vecino
                 pesoElMasCerca = peso
                 predecesor[elMasCerca] = vertice
@@ -91,36 +102,16 @@ class GraphAL:
                 distancia[vecino] = distancia[vertice] + elPesoDeVAlVecino
                 predecesor[vecino] = vertice
 
-    def getHarrasment(self, source, destination):
-        if self.ArregloDeListas[source][0]==destination:
-            return self.ArregloDeListas[source][3] 
-        else:
-            for destino, peso, oneWay, acoso in self.ArregloDeListas[source]:
-                if destino==destination:
-                    return acoso
-
-    def imprimirTuplas(self, vertex):
-        for i in self.ArregloDeListas[vertex]:
-            print(i)
-
-    def promedioPonderado(self):
-        numerador = 0
-        denominador = 0
-        for pareja in self.listaRecorridos:
-            print(list(self.ArregloDeListas).index(pareja))
-            numerador = numerador + self.ArregloDeListas[pareja][3]*self.ArregloDeListas[pareja][1]
-            denominador = denominador + self.ArregloDeListas[pareja][3]
-        return numerador/denominador
-
 def main():
     df = pd.read_csv("calles_de_medellin_con_acoso.csv", delimiter=";")
     lista = df.to_numpy().tolist()
-    promedio = 1
+    promedio = 14
     g = GraphAL(promedio)
     for i in lista:
-        g.addArc(i[1], i[2], i[3], i[4], i[5])
-    #g.imprimirDiccionario()
-    print(g.djikstra("(-75.5713302, 6.2083717)", "(-75.5742281, 6.2094339)"))
-    #print(g.getHarrasment("(1,2)", "(3,4)"))
+        g.addArc(i[1])
+    g.crearDeque()
+    for i in lista:
+        g.addLista(i[1], i[2], i[3], i[4], i[5])
+    print(g.djikstra("(-75.5686884, 6.2063927)", "(-75.5685931, 6.2073652)"))
 
 main()

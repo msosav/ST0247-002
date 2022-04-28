@@ -64,12 +64,6 @@ class GraphAL:
             self.listaRecorridos.append[vertice]
             self.actualizarLaTabla(vertice, distanciasAux, predecesoresAux)
             if fin == vertice:
-                """if self.promedio <= self.promedioPonderado():
-                    print("Distancia camino más corto:", self.distanciaMasCorta)
-                    print("Los puntos que se recorrieron:", self.listaRecorrido)
-                    print("Promedio ponderado acoso:", self.promedioPonderado())
-                else:
-                    print("No hay un camino")"""
                 lista = list(distanciasAux.values())
                 return (max(lista))
         return (max(list(distanciasAux)))

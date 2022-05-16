@@ -4,7 +4,7 @@ import pandas as pd
 
 class GraphAL:
     def __init__(self, acoso, distancia_maxima):
-        self.acoso = acoso
+        self.acoso_global = acoso
         self.distancia_maxima = distancia_maxima
         self.vertices = {}
         self.contador = 1
@@ -73,7 +73,7 @@ class GraphAL:
         for _ in range(tamano):
             vertice_actual = -1
             for vertice in range(tamano):
-                if (not visitados[vertice]) and (vertice_actual==-1 or distancias[vertice]<distancias[vertice_actual]):
+                if (visitados[vertice] == False) and (vertice_actual==-1 or distancias[vertice]<distancias[vertice_actual]):
                     vertice_actual=vertice
             if distancias[vertice_actual]==inf:
                 break
@@ -82,13 +82,14 @@ class GraphAL:
                 peso=self.getWeight(vertice_actual,vecino)
                 acoso=self.getAcoso(vertice_actual,vecino)
                 vecino = self.vertices[vecino]
-                if acosos[vertice_actual] + acoso < self.acoso:
+                if acosos[vertice_actual] + acoso < self.acoso_global:
                     if distancias[vertice_actual] + peso < distancias[vecino]:
                         distancias[vecino] = distancias[vertice_actual] + peso
                         acosos[vecino] = acosos[vertice_actual] + acoso
                         predecesores[vecino] = vertice_actual
 
-        return distancias[self.vertices[fin]], acosos[self.vertices[fin]]
+        print("Sin superar un promedio de", str(self.acoso_global), "acoso")
+        print("La distancia es " + str(distancias[self.vertices[fin]]))
 
 def main():
     df = pd.read_csv("calles_de_medellin_con_acoso.csv", delimiter=";")

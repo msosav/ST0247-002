@@ -87,11 +87,8 @@ class GraphAL:
                         distancias[vecino] = distancias[vertice_actual] + peso
                         acosos[vecino] = acosos[vertice_actual] + acoso
                         predecesores[vecino] = vertice_actual
-        
-        caminar=distancias[self.vertices[fin]]
-        asalto=acosos[self.vertices[fin]]
 
-        return caminar, asalto
+        return distancias[self.vertices[fin]], acosos[self.vertices[fin]]
 
 def main():
     df = pd.read_csv("calles_de_medellin_con_acoso.csv", delimiter=";")

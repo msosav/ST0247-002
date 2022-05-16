@@ -90,6 +90,34 @@ class GraphAL:
 
         return distancias[self.vertices[fin]], acosos[self.vertices[fin]]
 
+    def djikstra_con_acoso(self, inicio, fin):
+        tamano=self.contador
+        visitados = [False] * tamano
+        distancias = [inf] * tamano
+        acosos=[0]*tamano
+        predecesores = [-1] * tamano
+        distancias[self.vertices[inicio]] = 0
+
+        for _ in range(tamano):
+            vertice_actual = -1
+            for vertice in range(tamano):
+                if (not visitados[vertice]) and (vertice_actual==-1 or acosos[vertice]<acosos[vertice_actual]):
+                    vertice_actual=vertice
+            if acosos[vertice_actual]==inf:
+                break
+            visitados[vertice_actual] = True
+            for vecino in self.getSuccessors(vertice_actual):
+                peso=self.getWeight(vertice_actual,vecino)
+                acoso=self.getAcoso(vertice_actual,vecino)
+                vecino = self.vertices[vecino]
+                if distancias[vertice_actual] + distancias < self.distancia_maxima:
+                    if acosos[vertice_actual] + acoso < acosos[vecino]:
+                        distancias[vecino] = distancias[vertice_actual] + peso
+                        acosos[vecino] = acosos[vertice_actual] + acoso
+                        predecesores[vecino] = vertice_actual
+
+        return distancias[self.vertices[fin]], acosos[self.vertices[fin]]
+
 def main():
     df = pd.read_csv("calles_de_medellin_con_acoso.csv", delimiter=";")
     lista = df.to_numpy().tolist()

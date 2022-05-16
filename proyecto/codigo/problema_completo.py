@@ -64,11 +64,6 @@ class GraphAL:
                 acoso = i[4]
         return acoso
 
-    def xd(self, vertice):
-        for a, b in self.vertices.items():
-            if b == vertice:
-                return a
-
     def djikstra(self, inicio, fin):
         tamano=self.contador
         visitados = [False] * tamano
